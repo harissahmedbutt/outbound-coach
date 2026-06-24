@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Threads — Outbound Coach{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Dead Threads</div>
+    <div class="page-sub">Every failure analyzed. Patterns surfaced. Playbook built.</div>
+  </div>
+  <a href="/analyze" class="btn btn-primary">+ Analyze Thread</a>
+</div>
+
+{% if not ctx %}
+<div class="card">
+  <div class="empty">
+    <div class="empty-icon">🎯</div>
+    <div class="empty-title">Set your context first</div>
+    <p style="color: var(--muted); font-size: 0.85rem;">Tell the coach what you sell and who you target — it needs this to diagnose why your threads die.</p>
+    <br/>
+    <a href="/context" class="btn btn-primary">Set Context</a>
+  </div>
+</div>
+
+{% elif threads|length == 0 %}
+<div class="card">
+  <div class="empty">
+    <div class="empty-icon">🔬</div>
+    <div class="empty-title">No threads analyzed yet</div>
+    <p style="color: var(--muted); font-size: 0.85rem;">Paste a dead email chain or LinkedIn thread. Get a brutal, specific diagnosis and a recovery draft.</p>
+    <br/>
+    <a href="/analyze" class="btn btn-primary">Analyze Your First Thread</a>
+  </div>
+</div>
+
+{% else %}
+
+{% set total = threads|length %}
+{% set hot_count = threads | selectattr('failure_mode', 'in', ['wrong_icp', 'wrong_hook', 'feature_dump', 'too_generic']) | list | length %}
+
+<div class="stats">
+  <div class="stat">
+    <div class="stat-value">{{ total }}</div>
+    <div class="stat-label">Analyzed</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value" style="color: var(--red);">{{ hot_count }}</div>
+    <div class="stat-label">Core Failures</div>
+  </div>
+  <div class="stat">
+    <a href="/playbook" style="display:block;">
+      <div class="stat-value" style="color: var(--accent);">→</div>
+      <div class="stat-label">View Playbook</div>
+    </a>
+  </div>
+</div>
+
+<div class="card" style="padding: 0;">
+  {% for t in threads %}
+  <div class="thread-row">
+    <div class="thread-info">
+      <a href="/diagnosis/{{ t.id }}" style="display: block;">
+        <div class="thread-prospect">
+          {{ t.prospect_name or 'Unknown' }}
+          {% if t.prospect_role %}<span style="font-weight:400; color: var(--muted);"> · {{ t.prospect_role }}</span>{% endif %}
+          {% if t.prospect_company %}<span style="font-weight:400; color: var(--muted);"> at {{ t.prospect_company }}</span>{% endif %}
+        </div>
+        <div style="margin-top: 4px; display: flex; align-items: center; gap: 8px;">
+          {% if t.failure_mode %}
+          <span class="failure-badge badge-{{ t.failure_mode }}">
+            {{ failure_modes[t.failure_mode]['label'] if t.failure_mode in failure_modes else t.failure_mode }}
+          </span>
+          {% endif %}
+          <span style="color: var(--muted); font-size: 0.78rem;">{{ t.channel }} · {{ t.analyzed_at[:10] }}</span>
+        </div>
+      </a>
+    </div>
+    <a href="/diagnosis/{{ t.id }}" class="btn btn-ghost" style="font-size: 0.8rem;">View →</a>
+    <form method="POST" action="/threads/{{ t.id }}/delete" style="margin:0;" onsubmit="return confirm('Delete this thread?')">
+      <button class="btn btn-danger" style="padding: 7px 10px; font-size: 0.78rem;">✕</button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

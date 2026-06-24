@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Outbound Coach{% endblock %}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f14;
+      --surface: #14171f;
+      --surface2: #1c2030;
+      --border: #252936;
+      --accent: #f97316;
+      --accent-soft: rgba(249,115,22,0.12);
+      --green: #22c55e;
+      --green-soft: rgba(34,197,94,0.10);
+      --red: #ef4444;
+      --red-soft: rgba(239,68,68,0.10);
+      --amber: #f59e0b;
+      --amber-soft: rgba(245,158,11,0.10);
+      --purple: #a855f7;
+      --purple-soft: rgba(168,85,247,0.10);
+      --text: #e4e7ef;
+      --muted: #6b7280;
+      --radius: 10px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .layout { display: flex; min-height: 100vh; }
+
+    .sidebar {
+      width: 220px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 24px 0;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 10;
+    }
+
+    .logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+    .logo-mark { font-size: 1.05rem; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; }
+    .logo-sub { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 20px;
+      color: var(--muted); font-size: 0.875rem; font-weight: 500;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-item:hover, .nav-item.active { color: var(--text); background: var(--surface2); }
+    .nav-item.active { border-right: 2px solid var(--accent); }
+    .nav-icon { font-size: 1rem; width: 18px; text-align: center; }
+
+    .main { margin-left: 220px; flex: 1; padding: 32px 36px; max-width: 980px; }
+
+    .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; }
+    .page-title { font-size: 1.4rem; font-weight: 700; }
+    .page-sub { color: var(--muted); font-size: 0.85rem; margin-top: 3px; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .section-label {
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px;
+      color: var(--muted); margin-bottom: 12px;
+    }
+
+    /* Failure mode badge */
+    .failure-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 99px;
+      font-size: 0.78rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    .badge-wrong_icp        { background: var(--red-soft); color: var(--red); }
+    .badge-wrong_hook       { background: var(--amber-soft); color: var(--amber); }
+    .badge-feature_dump     { background: var(--red-soft); color: var(--red); }
+    .badge-friction_too_high { background: var(--purple-soft); color: var(--purple); }
+    .badge-timing           { background: var(--amber-soft); color: var(--amber); }
+    .badge-no_pain          { background: var(--red-soft); color: var(--red); }
+    .badge-social_proof_mismatch { background: var(--amber-soft); color: var(--amber); }
+    .badge-channel_mismatch { background: var(--purple-soft); color: var(--purple); }
+    .badge-too_generic      { background: var(--red-soft); color: var(--red); }
+    .badge-follow_up_fatigue { background: var(--amber-soft); color: var(--amber); }
+
+    /* Confidence bar */
+    .conf-bar { height: 4px; background: var(--border); border-radius: 99px; margin-top: 6px; }
+    .conf-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.4s; }
+
+    /* Tag */
+    .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin: 3px 3px 3px 0;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 16px; border-radius: 8px;
+      font-size: 0.85rem; font-weight: 600;
+      border: none; cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      text-decoration: none;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-danger { background: var(--red-soft); color: var(--red); border: 1px solid transparent; }
+
+    /* Forms */
+    .form-group { margin-bottom: 18px; }
+    label {
+      display: block; font-size: 0.78rem; font-weight: 600;
+      color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+    }
+    input[type="text"], select, textarea {
+      width: 100%; padding: 10px 13px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      font-size: 0.9rem; font-family: inherit; outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 80px; }
+
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 640px) { .grid-3, .grid-2 { grid-template-columns: 1fr; } }
+
+    /* Thread row */
+    .thread-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    .thread-row:last-child { border-bottom: none; }
+    .thread-row:hover { background: var(--surface2); }
+    .thread-info { flex: 1; min-width: 0; }
+    .thread-prospect { font-weight: 700; font-size: 0.88rem; }
+    .thread-company { color: var(--muted); font-size: 0.8rem; }
+
+    /* Stats */
+    .stats { display: flex; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
+    .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 22px; flex: 1; min-width: 130px; }
+    .stat-value { font-size: 1.8rem; font-weight: 800; line-height: 1; }
+    .stat-label { color: var(--muted); font-size: 0.75rem; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Empty */
+    .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .empty-title { font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+
+    /* Recovery block */
+    .recovery-block {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px;
+      white-space: pre-wrap; font-size: 0.92rem; line-height: 1.75;
+      font-family: "SF Mono", "Fira Code", monospace;
+      color: var(--text);
+    }
+
+    /* Callout */
+    .callout {
+      border-radius: 10px; padding: 16px 18px;
+      font-size: 0.9rem; line-height: 1.6;
+    }
+    .callout-red    { background: var(--red-soft); border: 1px solid var(--red); color: #fca5a5; }
+    .callout-amber  { background: var(--amber-soft); border: 1px solid var(--amber); color: #fcd34d; }
+    .callout-green  { background: var(--green-soft); border: 1px solid var(--green); color: #86efac; }
+    .callout-accent { background: var(--accent-soft); border: 1px solid var(--accent); color: #fdba74; }
+
+    /* Playbook bar */
+    .pb-bar { height: 8px; background: var(--border); border-radius: 99px; margin-top: 8px; }
+    .pb-fill { height: 100%; border-radius: 99px; background: var(--accent); }
+
+    #toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 18px;
+      font-size: 0.88rem; font-weight: 500;
+      display: none; z-index: 100;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    #toast.show { display: block; }
+    #toast.success { border-color: var(--green); color: var(--green); }
+    #toast.error { border-color: var(--red); color: var(--red); }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">Coach</div>
+      <div class="logo-sub">Outbound Intelligence</div>
+    </div>
+    <a href="/" class="nav-item {% if request.path == '/' %}active{% endif %}">
+      <span class="nav-icon">🧵</span> Threads
+    </a>
+    <a href="/analyze" class="nav-item {% if request.path == '/analyze' %}active{% endif %}">
+      <span class="nav-icon">🔬</span> Analyze Thread
+    </a>
+    <a href="/playbook" class="nav-item {% if request.path == '/playbook' %}active{% endif %}">
+      <span class="nav-icon">📖</span> Your Playbook
+    </a>
+    <a href="/context" class="nav-item {% if request.path == '/context' %}active{% endif %}">
+      <span class="nav-icon">⚙️</span> Your Context
+    </a>
+  </nav>
+
+  <main class="main">
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+<div id="toast"></div>
+<script>
+  function toast(msg, type = 'success') {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'show ' + type;
+    setTimeout(() => el.className = '', 3000);
+  }
+  function copyText(id) {
+    const el = document.getElementById(id);
+    navigator.clipboard.writeText(el.innerText || el.textContent)
+      .then(() => toast('Copied!'));
+  }
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

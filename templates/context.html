@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Your Context — Outbound Coach{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Your Context</div>
+    <div class="page-sub">The coach needs to know what you sell to diagnose why threads die</div>
+  </div>
+</div>
+
+<div class="card">
+  <form method="POST" action="/context">
+    <div class="form-group">
+      <label>What do you sell?</label>
+      <textarea name="product" rows="3" placeholder="e.g. A sales intelligence platform that helps SDRs at B2B SaaS companies find buying signals and personalize outreach. We replace manual research that currently takes 2 hours per prospect." required>{{ ctx.product if ctx else '' }}</textarea>
+    </div>
+    <div class="form-group">
+      <label>Who is your ICP?</label>
+      <textarea name="icp" rows="3" placeholder="e.g. VP Sales or Head of Sales at B2B SaaS companies with 20-150 employees, Series A or B, using Salesforce, with an SDR team of 3+ reps struggling with pipeline quality." required>{{ ctx.icp if ctx else '' }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Save Context</button>
+  </form>
+</div>
+
+<div class="callout callout-accent" style="margin-top: 0;">
+  <strong>Why this matters:</strong> The coach uses your product context and ICP to score each failure mode specifically. "Wrong ICP" means something different if you sell to enterprise CTOs vs. early-stage founders. Generic context = generic diagnosis.
+</div>
+{% endblock %}

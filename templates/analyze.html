@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Analyze Thread — Outbound Coach{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Analyze a Dead Thread</div>
+    <div class="page-sub">Paste the full conversation — the coach will diagnose exactly why it died</div>
+  </div>
+</div>
+
+{% if not ctx %}
+<div class="callout callout-red" style="margin-bottom: 20px;">
+  ⚠️ You haven't set your context yet. <a href="/context" style="color: var(--red); text-decoration: underline;">Set it first</a> so diagnoses are accurate.
+</div>
+{% endif %}
+
+<form method="POST" action="/analyze" id="analyzeForm">
+  <div class="card">
+    <div class="section-label">Prospect Info</div>
+    <div class="grid-3">
+      <div class="form-group">
+        <label>Prospect Name</label>
+        <input type="text" name="prospect_name" placeholder="Sarah Chen" />
+      </div>
+      <div class="form-group">
+        <label>Their Role</label>
+        <input type="text" name="prospect_role" placeholder="VP Sales" />
+      </div>
+      <div class="form-group">
+        <label>Their Company</label>
+        <input type="text" name="prospect_company" placeholder="Acme Corp" />
+      </div>
+    </div>
+    <div class="form-group" style="max-width: 200px;">
+      <label>Channel</label>
+      <select name="channel">
+        <option value="email">Email</option>
+        <option value="linkedin">LinkedIn</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-label">The Dead Thread</div>
+    <div class="form-group">
+      <textarea name="thread_text" rows="16" placeholder="Paste the full thread here. Include your messages AND any responses (or lack thereof). The more complete the context, the more specific the diagnosis.
+
+Example:
+
+--- My first email (June 10) ---
+Subject: Quick question about your pipeline
+
+Hi Sarah,
+
+Saw you recently joined Acme as VP Sales. Congrats on the new role.
+
+We help sales teams reduce research time per prospect by 70% using AI signal monitoring.
+
+Would love to show you a quick demo this week?
+
+Best,
+[Name]
+
+--- No response ---
+
+--- My follow-up (June 17) ---
+Subject: Re: Quick question about your pipeline
+
+Hi Sarah, just bumping this in case it got buried...
+
+---" required></textarea>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 12px; align-items: center;">
+    <button type="submit" class="btn btn-primary" id="submitBtn">
+      🔬 Diagnose This Thread
+    </button>
+    <span id="loadingMsg" style="color: var(--muted); font-size: 0.85rem; display: none;">
+      Analyzing... this takes 10–20 seconds
+    </span>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById('analyzeForm').addEventListener('submit', function() {
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('submitBtn').textContent = 'Analyzing...';
+    document.getElementById('loadingMsg').style.display = 'inline';
+  });
+</script>
+{% endblock %}

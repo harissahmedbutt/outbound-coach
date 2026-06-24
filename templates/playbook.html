@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Your Playbook — Outbound Coach{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Your Playbook</div>
+    <div class="page-sub">Built from your actual failure patterns — not generic advice</div>
+  </div>
+</div>
+
+{% if not data or data.total_analyzed == 0 %}
+<div class="card">
+  <div class="empty">
+    <div class="empty-icon">📖</div>
+    <div class="empty-title">Playbook builds as you analyze</div>
+    <p style="color: var(--muted); font-size: 0.85rem;">Analyze 3+ dead threads and your personal failure patterns will surface here — ranked by frequency, with specific fixes.</p>
+    <br/>
+    <a href="/analyze" class="btn btn-primary">Analyze a Thread</a>
+  </div>
+</div>
+
+{% else %}
+
+<div class="stats" style="margin-bottom: 28px;">
+  <div class="stat">
+    <div class="stat-value">{{ data.total_analyzed }}</div>
+    <div class="stat-label">Threads Analyzed</div>
+  </div>
+  {% if data.ranked_modes %}
+  <div class="stat">
+    <div class="stat-value" style="font-size: 0.95rem; color: var(--accent); margin-top: 4px;">
+      {{ failure_modes[data.ranked_modes[0][0]]['label'] if data.ranked_modes[0][0] in failure_modes else data.ranked_modes[0][0] }}
+    </div>
+    <div class="stat-label">Top Failure Mode</div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Failure mode breakdown -->
+{% if data.ranked_modes %}
+<div class="section-label">Your Failure Mode Breakdown</div>
+<div class="card" style="padding: 20px 24px;">
+  {% set max_count = data.ranked_modes[0][1] %}
+  {% for mode_key, count in data.ranked_modes %}
+  {% set mode = failure_modes.get(mode_key, {}) %}
+  <div style="margin-bottom: 20px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span class="failure-badge badge-{{ mode_key }}">{{ mode.get('label', mode_key) }}</span>
+        <span style="color: var(--muted); font-size: 0.8rem;">{{ count }} thread{{ 's' if count != 1 else '' }}</span>
+      </div>
+      <span style="color: var(--muted); font-size: 0.8rem;">{{ ((count / data.total_analyzed) * 100) | int }}%</span>
+    </div>
+    <div class="pb-bar">
+      <div class="pb-fill" style="width: {{ ((count / max_count) * 100) | int }}%;"></div>
+    </div>
+    {% if mode.fix %}
+    <div style="color: var(--muted); font-size: 0.8rem; margin-top: 6px;">→ {{ mode.fix }}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Top pattern tags -->
+{% if data.top_tags %}
+<div class="section-label" style="margin-top: 8px;">Recurring Patterns</div>
+<div class="card" style="padding: 18px 22px;">
+  <div>
+    {% for tag, count in data.top_tags %}
+    <span class="tag" style="font-size: 0.82rem; padding: 5px 13px; margin: 4px;">
+      {{ tag }} <span style="color: var(--accent); font-weight: 700;">×{{ count }}</span>
+    </span>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Prescriptive rules -->
+{% if data.ranked_modes %}
+<div class="section-label" style="margin-top: 8px;">Your Rules (Based on Your Data)</div>
+<div class="card" style="padding: 0;">
+  {% for mode_key, count in data.ranked_modes[:3] %}
+  {% set mode = failure_modes.get(mode_key, {}) %}
+  <div style="padding: 16px 20px; border-bottom: 1px solid var(--border);">
+    <div style="font-weight: 700; margin-bottom: 4px;">
+      Rule {{ loop.index }}: Fix "{{ mode.get('label', mode_key) }}" ({{ count }}× failure)
+    </div>
+    <div style="color: var(--muted); font-size: 0.88rem;">{{ mode.get('fix', '') }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

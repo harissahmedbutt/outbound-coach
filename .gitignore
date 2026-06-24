@@ -1,0 +1,5 @@
+.env
+coach.db
+__pycache__/
+*.pyc
+.DS_Store

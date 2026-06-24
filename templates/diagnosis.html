@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Diagnosis — {{ thread.prospect_name or 'Thread' }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+  <a href="/" class="btn btn-ghost" style="font-size: 0.82rem;">← All Threads</a>
+</div>
+
+<div class="page-header">
+  <div>
+    {% if thread.prospect_name or thread.prospect_company %}
+    <div style="color: var(--accent); font-size: 0.85rem; font-weight: 600; margin-bottom: 4px;">
+      {{ thread.prospect_name or '' }}{% if thread.prospect_role %} · {{ thread.prospect_role }}{% endif %}{% if thread.prospect_company %} at {{ thread.prospect_company }}{% endif %}
+    </div>
+    {% endif %}
+    <div class="page-title">Thread Diagnosis</div>
+    <div style="margin-top: 8px; display: flex; align-items: center; gap: 10px;">
+      {% if thread.failure_mode %}
+      <span class="failure-badge badge-{{ thread.failure_mode }}">
+        {{ failure_detail.get('label', thread.failure_mode) }}
+      </span>
+      {% endif %}
+      <span style="color: var(--muted); font-size: 0.8rem;">{{ thread.channel }} · {{ thread.analyzed_at[:10] }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- Confidence -->
+{% if thread.failure_confidence %}
+<div class="card">
+  <div class="section-label">Confidence</div>
+  <div style="display: flex; align-items: center; gap: 14px;">
+    <div style="font-size: 1.5rem; font-weight: 800; color: var(--accent);">{{ thread.failure_confidence }}%</div>
+    <div style="flex: 1;">
+      <div class="conf-bar"><div class="conf-fill" style="width: {{ thread.failure_confidence }}%;"></div></div>
+      <div style="color: var(--muted); font-size: 0.78rem; margin-top: 4px;">
+        {{ "Very confident" if thread.failure_confidence >= 85 else "Moderately confident" if thread.failure_confidence >= 70 else "Estimated" }}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Primary failure -->
+<div class="card">
+  <div class="section-label">Primary Failure Mode</div>
+  <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 6px;">{{ failure_detail.get('label', '') }}</div>
+  <p style="color: var(--muted); font-size: 0.88rem; margin-bottom: 16px;">{{ failure_detail.get('description', '') }}</p>
+
+  {% if explanation.why %}
+  <div class="callout callout-red">
+    <strong>Why THIS thread died:</strong><br/>{{ explanation.why }}
+  </div>
+  {% endif %}
+</div>
+
+<!-- Prospect POV -->
+{% if explanation.prospect_pov %}
+<div class="card">
+  <div class="section-label">What the Prospect Was Thinking</div>
+  <div style="font-size: 1rem; line-height: 1.7; color: var(--text); font-style: italic; padding-left: 12px; border-left: 3px solid var(--border);">
+    "{{ explanation.prospect_pov }}"
+  </div>
+</div>
+{% endif %}
+
+<!-- The fix -->
+{% if failure_detail.fix %}
+<div class="callout callout-green" style="margin-bottom: 16px;">
+  <strong>The fix:</strong> {{ failure_detail.fix }}
+</div>
+{% endif %}
+
+<!-- Pattern tags -->
+{% if pattern_tags %}
+<div style="margin-bottom: 16px;">
+  <div class="section-label">Pattern Tags</div>
+  {% for tag in pattern_tags %}
+  <span class="tag">{{ tag }}</span>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Recovery draft -->
+<div class="card">
+  <div class="section-label" style="display: flex; align-items: center; justify-content: space-between;">
+    <span>Recovery Draft</span>
+    <button class="btn btn-ghost" style="font-size: 0.78rem; padding: 5px 12px;" onclick="copyText('recovery')">Copy</button>
+  </div>
+  <div class="recovery-block" id="recovery">{{ thread.recovery_draft or 'No recovery draft generated.' }}</div>
+</div>
+
+<!-- Original thread -->
+<details style="margin-top: 8px;">
+  <summary style="color: var(--muted); font-size: 0.85rem; cursor: pointer; padding: 10px 0;">
+    View original thread
+  </summary>
+  <div class="card" style="margin-top: 8px; white-space: pre-wrap; font-size: 0.88rem; line-height: 1.7; color: var(--muted);">{{ thread.thread_text }}</div>
+</details>
+{% endblock %}
